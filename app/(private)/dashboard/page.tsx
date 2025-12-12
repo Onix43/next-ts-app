@@ -1,9 +1,9 @@
-export default function Page() {
-  return (
-    <div>
-      {' '}
-      Welcome to the private dashboard Page! (You can accsess only if aou
-      authed)
-    </div>
-  );
+import { getUser } from '@/app/lib/auth';
+import { redirect } from 'next/navigation';
+
+export default async function Page() {
+  const user = await getUser();
+
+  if (!user) redirect('/login');
+  return <div>Welcome, {user?.email}</div>;
 }
