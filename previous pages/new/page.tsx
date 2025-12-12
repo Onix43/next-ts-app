@@ -1,5 +1,5 @@
 'use client';
-import { useNotes } from '@/app/stores/useNotes';
+import { useNotes } from '@/previous pages/stores/useNotes';
 import { useEffect, useState } from 'react';
 
 function useDebounced<T>(value: T, delay: number) {
