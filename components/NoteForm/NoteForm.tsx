@@ -1,10 +1,18 @@
 'use client';
-import { useNotesStore } from '@/lib/notesStore/noteStore';
+import {
+  CreateNoteValues,
+  SaveStatus,
+  useNotesStore,
+} from '@/lib/notesStore/noteStore';
 import { useRouter } from 'next/navigation';
-import { useId } from 'react';
+import { Dispatch, SetStateAction, useId } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
-export default function NoteForm() {
+interface NoteFormProps {
+  setStatus: Dispatch<SetStateAction<SaveStatus>>;
+}
+
+export default function NoteForm({ setStatus }: NoteFormProps) {
   const id = useId();
 
   const { draft, setDraft, clearDraft } = useNotesStore();
@@ -23,13 +31,27 @@ export default function NoteForm() {
     router.push('/notes');
   };
 
+  const debouncedSave = useDebouncedCallback(async draft => {
+    try {
+      setStatus('saving');
+
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
+
+      await delay(500); // Імітація запиту бо немає ендпоінтів
+      console.log(draft);
+      setStatus('saved');
+    } catch {
+      setStatus('error');
+    }
+  }, 500);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setDraft({ ...draft, [e.target.name]: e.target.value });
+    debouncedSave(draft);
   };
-
-  const debounced = useDebouncedCallback(handleChange, 300);
   return (
     <form action={handleSubmit}>
       <label htmlFor={`${id}-title`}>Title</label>
@@ -37,14 +59,14 @@ export default function NoteForm() {
         type="text"
         name="title"
         id={`${id}-title`}
-        onChange={debounced}
+        onChange={handleChange}
         value={draft.title}
       />
       <label htmlFor={`${id}-content`}>Content</label>
       <textarea
         name="content"
         id={`${id}-content`}
-        onChange={debounced}
+        onChange={handleChange}
         value={draft.content}
       ></textarea>
       <button type="submit">Send</button>
