@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
@@ -12,16 +11,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  try {
-    jwt.verify(token, 'SECRET');
-    return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard', '/login', '/register'],
+  matcher: ['/notes/:path*', '/login', '/register'],
 };
 
 // task 1 + 2export const config = {

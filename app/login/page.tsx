@@ -23,8 +23,8 @@ export default function Page() {
     try {
       await schema.validate({ email, password }, { abortEarly: false });
 
-      await axios.post('/api/login', { email, password });
-      router.push('/dashboard');
+      await axios.post('/api/auth/login', { email, password });
+      router.push('/notes');
     } catch {
       alert('Error!');
     }
