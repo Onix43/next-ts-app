@@ -1,3 +1,4 @@
+import AuthHeader from '@/components/AuthHeader/AuthHeader';
 import './globals.css';
 import { Inter } from 'next/font/google';
 
@@ -15,8 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body>
-        <header>----Header----</header>
-        {children}
+        <AuthHeader />
+        <main>{children}</main>
         <footer>----Footer----</footer>
       </body>
     </html>

@@ -45,3 +45,21 @@ button:disabled {
 button:active {
   background-color: rgba(15, 158, 158, 0.226);
 }
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px 0;
+}
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}

@@ -3,13 +3,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as yup from 'yup';
 import { api } from '@/lib/api/api';
-import { useUserStore } from '@/lib/userStore/userStore';
 
-export default function Page() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
-  const { setUser } = useUserStore();
 
   const schema = yup.object().shape({
     password: yup
@@ -25,16 +23,15 @@ export default function Page() {
     try {
       await schema.validate({ email, password }, { abortEarly: false });
 
-      await api.post('/auth/login', { email, password });
-      setUser(email);
-      router.push('/profile');
+      await api.post('/auth/register', { email, password });
+      router.push('/login');
     } catch (err) {
       console.log('error', err);
     }
   };
   return (
     <>
-      <h1>Login</h1>
+      <h1>Register</h1>
       <form onSubmit={submit}>
         <label htmlFor="email">Enter email</label>
         <input
