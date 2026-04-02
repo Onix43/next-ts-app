@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body>
-        <AuthHeader />
+        {/* <AuthHeader /> */}
         <main>{children}</main>
         <footer>----Footer----</footer>
       </body>
