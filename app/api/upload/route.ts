@@ -26,3 +26,15 @@ export async function POST(req: Request) {
     url: `/uploads/${fileName}`,
   });
 }
+const uploadFile = async (file: File) => {
+  const formData = new FormData();
+
+  // 'image' — це назва поля, яка в Swagger позначена як string($binary)
+  formData.append('image', file);
+
+  await axios.post('/api/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // Важливо для передачі бінарних даних
+    },
+  });
+};

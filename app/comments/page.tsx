@@ -1,7 +1,8 @@
 'use client';
+import CommentInput from '@/components/CommentInput/CommentInput';
 import { useState } from 'react';
 
-type Comment = {
+export type Comment = {
   id: string;
   text: string;
   likes: number;
@@ -11,7 +12,9 @@ type Comment = {
 export default function Comments() {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
-  const [showInput, setShowInput] = useState<boolean>(false);
+  const [commentIds, setCommentIds] = useState<Set<string>>(new Set());
+  const [redactionIds, setRedactionIds] = useState<Set<string>>(new Set());
+  const [redactionText, setRedactionText] = useState<string>('');
 
   const updateTree = (
     id: string,
@@ -40,6 +43,63 @@ export default function Comments() {
     setComments(prev => updateTree(id, prev, !isAlreadyLiked));
   };
 
+  const handleDelete = (id: string) => {
+    const deleteFromTree = (id: string, arr: Comment[]): Comment[] => {
+      return arr
+        .filter(comment => comment.id !== id)
+        .map(comment => {
+          if (comment.replies.length > 0) {
+            return {
+              ...comment,
+              replies: deleteFromTree(id, comment.replies),
+            };
+          }
+          return comment;
+        });
+    };
+    setComments(deleteFromTree(id, comments));
+  };
+
+  const toggleInput = (id: string) => {
+    const isAlreadyInput = commentIds.has(id);
+
+    const newInputIds = new Set(commentIds);
+    if (isAlreadyInput) newInputIds.delete(id);
+    else newInputIds.add(id);
+    setCommentIds(newInputIds);
+  };
+
+  const toggleRedaction = (id: string, text: string) => {
+    const isAlreadyRedaction = redactionIds.has(id);
+
+    const newRedactionIds = new Set(redactionIds);
+    if (isAlreadyRedaction) {
+      newRedactionIds.delete(id);
+      setRedactionText('');
+    } else {
+      newRedactionIds.add(id);
+      setRedactionText(text);
+    }
+    setRedactionIds(newRedactionIds);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    // Знаю що це "bad practice" робити це через контрольовані елементи, але зробив так щоб показати що розумію як зе зробити, але було лінь вже робити ще один компонент😅
+    setRedactionText(e.target.value);
+    const updateTree = (id: string, arr: Comment[]): Comment[] => {
+      return arr.map(com => {
+        if (com.id === id) {
+          return { ...com, text: redactionText };
+        }
+        if (com.replies.length > 0) {
+          return { ...com, replies: updateTree(id, com.replies) };
+        }
+        return com;
+      });
+    };
+    setComments(updateTree(id, comments));
+  };
+
   const renderComments = (arr: Comment[]) =>
     arr.map(com => (
       <div
@@ -50,7 +110,15 @@ export default function Comments() {
           paddingLeft: '15px',
         }}
       >
-        <p>{com.text}</p>
+        {redactionIds.has(com.id) ? (
+          <input
+            type="text"
+            value={redactionText}
+            onChange={e => handleChange(e, com.id)}
+          />
+        ) : (
+          <p>{com.text}</p>
+        )}
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={() => handleLike(com.id)}
@@ -58,8 +126,22 @@ export default function Comments() {
           >
             {likedIds.has(com.id) ? '❤️' : '🤍'} {com.likes}
           </button>
-          <button>➕ Add reply</button>
+          <button onClick={() => toggleInput(com.id)}>
+            {commentIds.has(com.id) ? 'Hide' : '➕ Add reply'}
+          </button>
+          <button onClick={() => handleDelete(com.id)}>Delete ❌</button>
+          <button onClick={() => toggleRedaction(com.id, com.text)}>
+            {redactionIds.has(com.id) ? 'Save' : '✏️ Edit'}
+          </button>
         </div>
+        {commentIds.has(com.id) && (
+          <CommentInput
+            comments={comments}
+            setComments={setComments}
+            id={com.id}
+            toggleInput={toggleInput}
+          />
+        )}
 
         {com.replies.length > 0 && (
           <div style={{ marginLeft: '20px' }}>
