@@ -1,64 +1,62 @@
-'use client';
-import { SetStateAction, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-const todoArray = [
-  {
-    id: '1',
-    text: 'Some text',
-    completed: true,
-  },
-  {
-    id: '2',
-    text: 'Some text v2',
-    completed: true,
-  },
-  {
-    id: '3',
-    text: 'Some text v3',
-    completed: false,
-  },
+import { useRef, useState } from 'react';
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const users: User[] = [
+  { id: 1, name: 'Ivan' },
+  { id: 2, name: 'Petro' },
+  { id: 3, name: 'Olga' },
+  { id: 4, name: 'Andrii' },
 ];
 
 export default function TodoList() {
-  const [todoList, setTodoList] = useState(todoArray); // зробив так бо не передаю пропсом
   const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const toggleCompleted = (id: string) => {
-    setTodoList(
-      todoList.map(todo => {
-        if (id === todo.id) return { ...todo, completed: !todo.completed };
-        return todo;
-      })
-    );
+  const timerId = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedSearch = (value: string) => {
+    setLoading(true);
+    if (timerId.current) clearTimeout(timerId.current);
+
+    timerId.current = setTimeout(() => {
+      setQuery(value);
+      setLoading(false);
+    }, 500);
   };
-  const handleDelete = (id: string) => {
-    setTodoList(todoList.filter(todo => todo.id !== id));
-  };
-  const addTodo = () => {
-    const customId = uuidv4();
-    setTodoList([...todoList, { id: customId, text: query, completed: false }]);
-    setQuery('');
-  };
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(query.toLowerCase())
+  );
   return (
     <div>
-      <div>
-        <input
-          type="text"
-          placeholder="Enter todo text..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <button onClick={addTodo}>Add todo</button>
-      </div>
+      <input
+        type="text"
+        placeholder="Enter username"
+        onChange={e => debouncedSearch(e.target.value)}
+      />
+      {loading && <p>Loading, please wait...</p>}
+      {!loading && filteredUsers.length === 0 && (
+        <p>Sorry, no results matched your call</p>
+      )}
       <ul>
-        {todoList.map(todo => (
+        {filteredUsers.map(user => (
           <li
-            key={todo.id}
-            style={{ backgroundColor: todo.completed ? 'green' : 'false' }}
+            key={user.id}
+            onClick={() => {
+              if (selectedUsers.includes(user)) {
+                setSelectedUsers(prev =>
+                  prev.filter(item => item.id !== user.id)
+                );
+              } else setSelectedUsers(prev => [...prev, user]);
+            }}
           >
-            <h3>{todo.text}</h3>
-            <button onClick={() => toggleCompleted(todo.id)}>Toggle</button>
-            <button onClick={() => handleDelete(todo.id)}>X</button>
+            <h3>{user.name}</h3>
+            {selectedUsers.includes(user)
+              ? 'Delete from selected❌'
+              : 'Mark as selected✅'}
           </li>
         ))}
       </ul>

@@ -14,10 +14,6 @@ export default function ImageLoader() {
   return (
     <>
       <TodoList />
-      <form action={handleSubmit}>
-        <input type="file" name="avatar" />
-        <button type="submit">Load</button>
-      </form>
     </>
   );
 }
